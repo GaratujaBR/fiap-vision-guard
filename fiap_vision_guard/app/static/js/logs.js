@@ -204,17 +204,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const visibleCards = Array.from(logCards).filter(card => card.style.display !== 'none');
         
         visibleCards.sort((a, b) => {
+            const dateA = new Date(a.getAttribute('data-date'));
+            const dateB = new Date(b.getAttribute('data-date'));
+            const confidenceA = parseInt(a.getAttribute('data-confidence'));
+            const confidenceB = parseInt(b.getAttribute('data-confidence'));
+            
             switch (filters.sortBy) {
-                case 'date-asc':
-                    return new Date(a.getAttribute('data-date')) - new Date(b.getAttribute('data-date'));
                 case 'date-desc':
-                    return new Date(b.getAttribute('data-date')) - new Date(a.getAttribute('data-date'));
-                case 'confidence-asc':
-                    return parseInt(a.getAttribute('data-confidence')) - parseInt(b.getAttribute('data-confidence'));
+                    return dateB - dateA;
+                case 'date-asc':
+                    return dateA - dateB;
                 case 'confidence-desc':
-                    return parseInt(b.getAttribute('data-confidence')) - parseInt(a.getAttribute('data-confidence'));
+                    return confidenceB - confidenceA;
+                case 'confidence-asc':
+                    return confidenceA - confidenceB;
                 default:
-                    return 0;
+                    return dateB - dateA;
             }
         });
         
@@ -227,8 +232,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Formata uma data para o formato de input (YYYY-MM-DD)
     function formatDateForInput(date) {
         const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
     
@@ -245,130 +250,188 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializa os modais para visualização de detalhes
     initializeDetailModals();
-});
-
-// Inicializa os modais para visualização de detalhes
-function initializeDetailModals() {
-    const detailButtons = document.querySelectorAll('.view-details-btn');
     
-    detailButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const logId = this.getAttribute('data-log-id');
-            showLogDetails(logId);
+    // Inicializa os modais para visualização de detalhes
+    function initializeDetailModals() {
+        const detailButtons = document.querySelectorAll('.view-details-btn');
+        detailButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const logId = this.getAttribute('data-log-id');
+                showLogDetails(logId);
+            });
         });
-    });
-}
-
-// Função para exibir os detalhes do log em um modal
-function showLogDetails(logId) {
-    // Em um cenário real, isso buscaria os detalhes do backend
-    // Aqui apenas simulamos a abertura de um modal com os detalhes
-    
-    const logCard = document.querySelector(`.log-card[data-log-id="${logId}"]`);
-    if (!logCard) return;
-    
-    const date = logCard.getAttribute('data-date');
-    const confidence = logCard.getAttribute('data-confidence');
-    const objectType = logCard.getAttribute('data-object-type');
-    const imageUrl = logCard.querySelector('img').src;
-    
-    // Cria o modal dinamicamente
-    const modalId = `logModal${logId}`;
-    let modal = document.getElementById(modalId);
-    
-    if (!modal) {
-        const modalHTML = `
-            <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="${modalId}Label">Detalhes da Detecção #${logId}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <img src="${imageUrl}" class="img-fluid rounded" alt="Detecção ${logId}">
-                                </div>
-                                <div class="col-md-6">
-                                    <h5>Informações da Detecção</h5>
-                                    <table class="table">
-                                        <tbody>
-                                            <tr>
-                                                <th scope="row">ID</th>
-                                                <td>${logId}</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Data/Hora</th>
-                                                <td>${new Date(date).toLocaleString()}</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Tipo de Objeto</th>
-                                                <td>${objectType}</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Confiança</th>
-                                                <td>${confidence}%</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Vídeo</th>
-                                                <td>video_${Math.floor(Math.random() * 1000)}.mp4</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Timestamp</th>
-                                                <td>${Math.floor(Math.random() * 5)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Frame</th>
-                                                <td>${Math.floor(Math.random() * 1000) + 1}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <h5>Ações Tomadas</h5>
-                                <ul class="list-group">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Alerta enviado por e-mail
-                                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Notificação enviada para app
-                                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Alerta enviado para segurança
-                                        <span class="badge bg-success"><i class="fas fa-check"></i></span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="mt-4">
-                                <h5>Observações</h5>
-                                <div class="form-floating">
-                                    <textarea class="form-control" id="observationsTextarea${logId}" style="height: 100px"></textarea>
-                                    <label for="observationsTextarea${logId}">Adicionar observação</label>
-                                </div>
-                                <button class="btn btn-sm btn-primary mt-2">Salvar Observação</button>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                            <button type="button" class="btn btn-primary">
-                                <i class="fas fa-download me-1"></i> Exportar Relatório
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
         
-        // Adiciona o modal ao corpo do documento
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        modal = document.getElementById(modalId);
+        // Adiciona evento para fechar o modal de detalhes
+        const closeButtons = document.querySelectorAll('.close-details-btn');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = document.getElementById('detailsModal');
+                if (modal) {
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    if (modalInstance) modalInstance.hide();
+                }
+            });
+        });
     }
     
-    // Abre o modal
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
-}
+    // Função para exibir os detalhes do log em um modal
+    function showLogDetails(logId) {
+        // Encontra o card do log correspondente
+        const logCard = document.querySelector(`.log-card[data-log-id="${logId}"]`);
+        if (!logCard) return;
+        
+        // Obtém os dados do log
+        const date = logCard.getAttribute('data-date');
+        const confidence = logCard.getAttribute('data-confidence');
+        const objectType = logCard.getAttribute('data-object-type');
+        const imageUrl = logCard.querySelector('.log-image').src;
+        const logTitle = logCard.querySelector('.log-title').textContent;
+        const camera = logCard.querySelector('.log-info-value:nth-of-type(3)').textContent;
+        const logIdText = logCard.querySelector('.text-muted').textContent;
+        
+        // Formata a data para exibição
+        const formattedDate = new Date(date).toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        
+        // Determina a severidade com base na confiança
+        let severity = 'Baixo';
+        let severityClass = 'text-success';
+        
+        if (confidence > 90) {
+            severity = 'Crítico';
+            severityClass = 'text-danger';
+        } else if (confidence > 70) {
+            severity = 'Médio';
+            severityClass = 'text-warning';
+        }
+        
+        // Traduz o tipo de objeto
+        let objectTypeText = 'Desconhecido';
+        switch (objectType) {
+            case 'knife':
+                objectTypeText = 'Faca';
+                break;
+            case 'scissors':
+                objectTypeText = 'Tesoura';
+                break;
+            case 'cutter':
+                objectTypeText = 'Estilete';
+                break;
+            case 'other':
+                objectTypeText = 'Outro objeto cortante';
+                break;
+        }
+        
+        // Preenche o modal com os dados do log
+        const modal = document.getElementById('detailsModal');
+        if (modal) {
+            modal.querySelector('.modal-title').textContent = logTitle;
+            modal.querySelector('#detail-image').src = imageUrl;
+            modal.querySelector('#detail-date').textContent = formattedDate;
+            modal.querySelector('#detail-confidence').textContent = `${confidence}%`;
+            modal.querySelector('#detail-object-type').textContent = objectTypeText;
+            modal.querySelector('#detail-camera').textContent = camera;
+            modal.querySelector('#detail-severity').textContent = severity;
+            modal.querySelector('#detail-severity').className = severityClass;
+            modal.querySelector('#detail-id').textContent = logIdText;
+            
+            // Exibe o modal
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        }
+    }
+    
+    // Adiciona funcionalidade de exportação de logs
+    const exportButtons = document.querySelectorAll('.export-btn');
+    exportButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const logId = this.getAttribute('data-log-id');
+            prepareExport(logId);
+        });
+    });
+    
+    // Função para preparar a exportação de um log
+    function prepareExport(logId) {
+        const logCard = document.querySelector(`.log-card[data-log-id="${logId}"]`);
+        if (!logCard) return;
+        
+        const date = new Date(logCard.getAttribute('data-date'));
+        const formattedDate = date.toLocaleDateString('pt-BR');
+        const objectType = logCard.getAttribute('data-object-type');
+        
+        // Preenche o modal de exportação
+        const exportModal = document.getElementById('exportModal');
+        if (exportModal) {
+            const logIdText = logCard.querySelector('.text-muted').textContent;
+            exportModal.querySelector('#export-log-id').textContent = logIdText;
+            exportModal.querySelector('#export-date').textContent = formattedDate;
+            
+            // Traduz o tipo de objeto
+            let objectTypeText = 'Desconhecido';
+            switch (objectType) {
+                case 'knife':
+                    objectTypeText = 'Faca';
+                    break;
+                case 'scissors':
+                    objectTypeText = 'Tesoura';
+                    break;
+                case 'cutter':
+                    objectTypeText = 'Estilete';
+                    break;
+                case 'other':
+                    objectTypeText = 'Outro objeto cortante';
+                    break;
+            }
+            
+            exportModal.querySelector('#export-type').textContent = objectTypeText;
+            
+            // Exibe o modal
+            const modalInstance = new bootstrap.Modal(exportModal);
+            modalInstance.show();
+        }
+    }
+    
+    // Função para exportar logs
+    const exportForm = document.getElementById('export-form');
+    if (exportForm) {
+        exportForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const format = document.querySelector('input[name="export-format"]:checked').value;
+            const includeImage = document.getElementById('include-image').checked;
+            
+            // Simula o início do download
+            const exportModal = document.getElementById('exportModal');
+            if (exportModal) {
+                const modalInstance = bootstrap.Modal.getInstance(exportModal);
+                if (modalInstance) modalInstance.hide();
+                
+                // Exibe notificação de sucesso
+                const alertContainer = document.getElementById('alert-container');
+                if (alertContainer) {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show';
+                    alert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Sucesso!</strong> Log exportado com sucesso no formato ${format.toUpperCase()}.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                    `;
+                    
+                    alertContainer.appendChild(alert);
+                    
+                    // Remove a notificação após 5 segundos
+                    setTimeout(() => {
+                        alert.classList.remove('show');
+                        setTimeout(() => alert.remove(), 150);
+                    }, 5000);
+                }
+            }
+        });
+    }
+});
