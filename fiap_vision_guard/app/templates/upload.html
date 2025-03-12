@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload de Vídeo - FIAP VisionGuard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+<style>
+    .upload-container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        background-color: #f8f9fa;
+    }
+
+    .upload-area:hover {
+        border-color: #0d6efd;
+        background-color: #f0f7ff;
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+        color: #0d6efd;
+        margin-bottom: 1rem;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .file-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .file-preview {
+        margin-bottom: 2rem;
+    }
+
+    .upload-progress-container {
+        margin-bottom: 2rem;
+    }
+
+    .progress {
+        height: 0.5rem;
+    }
+
+    .upload-restrictions {
+        margin-bottom: 2rem;
+    }
+
+    .upload-actions {
+        text-align: right;
+    }
+
+    .upload-button {
+        margin-left: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="text-center mb-4">
+        <h2 class="mb-2">Upload de Vídeo</h2>
+        <p class="text-muted">Faça o upload de um vídeo para detecção de objetos cortantes</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="upload-form" action="{{ url_for('routes.upload_file') }}" method="post" enctype="multipart/form-data">
+                <div id="upload-area" class="upload-area">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h4 class="upload-text">Arraste e solte seu vídeo aqui</h4>
+                    <p class="upload-info">ou clique para selecionar um arquivo</p>
+                    <input type="file" id="video-file" name="video" class="file-input" 
+                           accept=".mp4,.avi,.mov,.wmv" data-max-size="100" data-allowed-types="video/mp4,video/avi,video/quicktime,video/x-ms-wmv">
+                    <p id="file-name" class="file-name">Nenhum arquivo selecionado</p>
+                </div>
+
+                <div id="file-preview" class="file-preview"></div>
+
+                <div id="upload-progress-container" class="upload-progress-container d-none">
+                    <p class="mb-2">Enviando vídeo...</p>
+                    <div class="progress">
+                        <div id="upload-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" 
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <div class="upload-restrictions">
+                    <h5><i class="fas fa-info-circle me-2"></i>Restrições de Upload</h5>
+                    <ul>
+                        <li>Formatos aceitos: MP4, AVI, MOV, WMV</li>
+                        <li>Tamanho máximo: 100 MB</li>
+                        <li>Duração máxima recomendada: 10 minutos</li>
+                        <li>Resolução mínima recomendada: 640x480</li>
+                    </ul>
+                </div>
+
+                <div class="upload-actions">
+                    <a href="{{ url_for('routes.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Voltar
+                    </a>
+                    <button id="upload-button" type="submit" class="btn btn-primary upload-button" disabled>
+                        <i class="fas fa-upload me-1"></i> Enviar Vídeo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('video-file');
+        const fileName = document.getElementById('file-name');
+        const filePreview = document.getElementById('file-preview');
+        const uploadProgressContainer = document.getElementById('upload-progress-container');
+        const uploadProgressBar = document.getElementById('upload-progress-bar');
+        const uploadButton = document.getElementById('upload-button');
+
+        // Evento de arrastar e soltar
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Evento de soltar arquivo
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileInfo();
+            }
+        }
+
+        // Evento de selecionar arquivo
+        fileInput.addEventListener('change', updateFileInfo);
+
+        // Atualiza informações do arquivo
+        function updateFileInfo() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+
+                // Verifica se é um formato de vídeo válido
+                const validTypes = ['.mp4', '.avi', '.mov', '.wmv', 'video/mp4', 'video/avi', 'video/quicktime', 'video/x-ms-wmv'];
+                const fileType = file.type;
+                const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (!validTypes.includes(fileType) && !validTypes.includes(fileExt)) {
+                    alert('Por favor, selecione um arquivo de vídeo válido (MP4, AVI, MOV, WMV).');
+                    resetFileInput();
+                    return;
+                }
+
+                // Verifica o tamanho do arquivo (limite de 100MB)
+                const maxSize = 100 * 1024 * 1024; // 100MB em bytes
+                if (file.size > maxSize) {
+                    alert('O arquivo é muito grande. O tamanho máximo permitido é 100MB.');
+                    resetFileInput();
+                    return;
+                }
+
+                // Exibe as informações do arquivo
+                fileName.textContent = file.name;
+                filePreview.innerHTML = `<video width="100%" height="100%" controls>
+                                            <source src="${URL.createObjectURL(file)}" type="${file.type}">
+                                            Seu navegador não suporta o elemento de vídeo.
+                                        </video>`;
+                uploadButton.disabled = false;
+            } else {
+                resetFileInput();
+            }
+        }
+
+        // Remove o arquivo selecionado
+        function resetFileInput() {
+            fileInput.value = '';
+            fileName.textContent = 'Nenhum arquivo selecionado';
+            filePreview.innerHTML = '';
+            uploadButton.disabled = true;
+        }
+
+        // Simulação de upload
+        uploadButton.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            if (fileInput.files.length === 0) {
+                alert('Por favor, selecione um arquivo de vídeo.');
+                return;
+            }
+
+            // Inicia o upload
+            uploadProgressContainer.classList.remove('d-none');
+
+            // Simulação de progresso
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 5;
+                uploadProgressBar.style.width = progress + '%';
+                uploadProgressBar.setAttribute('aria-valuenow', progress);
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+
+                    // Submete o formulário após a simulação
+                    setTimeout(function() {
+                        document.getElementById('upload-form').submit();
+                    }, 500);
+                }
+            }, 200);
+        });
+    });
+</script>
+{% endblock %}

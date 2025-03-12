@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block title %}Processando Vídeo - FIAP VisionGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .processing-container {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .processing-icon {
+        font-size: 4rem;
+        color: #0d6efd;
+        margin-bottom: 1.5rem;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.7;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .progress {
+        height: 0.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .step-container {
+        margin-top: 2rem;
+    }
+    
+    .step {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+    }
+    
+    .step.active {
+        background-color: #e9f2ff;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .step.completed {
+        background-color: #f0fff0;
+        border-left: 4px solid #28a745;
+    }
+    
+    .step-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    .step-title {
+        font-weight: 600;
+    }
+    
+    .step-description {
+        margin-top: 0.5rem;
+        color: #6c757d;
+    }
+    
+    .detection-result {
+        display: none;
+        margin-top: 2rem;
+    }
+    
+    .result-card {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .alert-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .detection-image {
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-cogs me-2"></i>Processando Vídeo</h4>
+            </div>
+            <div class="card-body">
+                <div class="processing-container">
+                    <i class="fas fa-spinner fa-spin processing-icon" id="processingIcon"></i>
+                    <h3 id="processingStatus">Processando seu vídeo...</h3>
+                    <p class="text-muted" id="processingInfo">
+                        Isso pode levar alguns minutos, dependendo do tamanho e da duração do vídeo.
+                    </p>
+                    
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                    
+                    <div class="step-container">
+                        <div class="step" id="step1">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-video step-icon text-primary"></i>
+                                <span class="step-title">Validando Vídeo</span>
+                            </div>
+                            <p class="step-description">Verificando formato e integridade do arquivo de vídeo.</p>
+                        </div>
+                        
+                        <div class="step" id="step2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-film step-icon text-primary"></i>
+                                <span class="step-title">Extraindo Frames</span>
+                            </div>
+                            <p class="step-description">Extraindo frames do vídeo para análise.</p>
+                        </div>
+                        
+                        <div class="step" id="step3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-search step-icon text-primary"></i>
+                                <span class="step-title">Analisando Frames</span>
+                            </div>
+                            <p class="step-description">Utilizando IA para detectar objetos cortantes nos frames extraídos.</p>
+                        </div>
+                        
+                        <div class="step" id="step4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clipboard-check step-icon text-primary"></i>
+                                <span class="step-title">Finalizando Análise</span>
+                            </div>
+                            <p class="step-description">Compilando resultados e gerando relatório.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resultado da detecção - Objeto cortante detectado -->
+                <div class="detection-result" id="detectionPositive">
+                    <div class="alert alert-danger text-center p-4">
+                        <i class="fas fa-exclamation-triangle alert-icon"></i>
+                        <h3 class="alert-heading">Objeto Cortante Detectado!</h3>
+                        <p class="mb-0">
+                            Um objeto cortante foi identificado no vídeo analisado.
+                            Um alerta foi enviado para a equipe de segurança.
+                        </p>
+                    </div>
+                    
+                    <div class="card result-card mt-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Detalhes da Detecção</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Informações</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Tipo de Objeto:
+                                            <span class="badge bg-danger" id="objectType">Faca</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Confiança da Detecção:
+                                            <span class="badge bg-primary" id="confidence">85%</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Frame Detectado:
+                                            <span id="frameNumber">32</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Tempo no Vídeo:
+                                            <span id="videoTime">00:01:28</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Alerta Enviado:
+                                            <span class="badge bg-success">Sim</span>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="mt-4">
+                                        <h5>Ações</h5>
+                                        <div class="d-grid gap-2">
+                                            <a href="#" class="btn btn-outline-primary">
+                                                <i class="fas fa-download me-2"></i>Baixar Relatório
+                                            </a>
+                                            <a href="{{ url_for('routes.view_logs') }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-list-alt me-2"></i>Ver Logs
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Frame Detectado</h5>
+                                    <img src="{{ url_for('static', filename='img/placeholder-detection.jpg') }}" alt="Frame com objeto cortante detectado" class="detection-image" id="detectionImage">
+                                    
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <small>Esta imagem foi enviada junto com o alerta para a equipe de segurança.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resultado da detecção - Nenhum objeto cortante detectado -->
+                <div class="detection-result" id="detectionNegative">
+                    <div class="alert alert-success text-center p-4">
+                        <i class="fas fa-check-circle alert-icon"></i>
+                        <h3 class="alert-heading">Nenhum Objeto Cortante Detectado</h3>
+                        <p class="mb-0">
+                            Não foram identificados objetos cortantes no vídeo analisado.
+                            O vídeo foi processado com sucesso.
+                        </p>
+                    </div>
+                    
+                    <div class="card result-card mt-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Detalhes da Análise</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Informações</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Total de Frames Analisados:
+                                            <span id="totalFrames">120</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Duração do Vídeo:
+                                            <span id="videoDuration">00:02:00</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Tempo de Processamento:
+                                            <span id="processingTime">45 segundos</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Status:
+                                            <span class="badge bg-success">Concluído</span>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="mt-4">
+                                        <h5>Ações</h5>
+                                        <div class="d-grid gap-2">
+                                            <a href="#" class="btn btn-outline-primary">
+                                                <i class="fas fa-download me-2"></i>Baixar Relatório
+                                            </a>
+                                            <a href="{{ url_for('routes.upload_file') }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-upload me-2"></i>Analisar Outro Vídeo
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                                            <i class="fas fa-shield-alt fa-5x text-success mb-3"></i>
+                                            <h5>Vídeo Seguro</h5>
+                                            <p class="text-muted">
+                                                Nosso sistema de IA não identificou nenhum objeto cortante ou perigoso 
+                                                no vídeo analisado. O vídeo foi classificado como seguro.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos da interface
+        const progressBar = document.getElementById('progressBar');
+        const processingStatus = document.getElementById('processingStatus');
+        const processingInfo = document.getElementById('processingInfo');
+        const processingIcon = document.getElementById('processingIcon');
+        const steps = [
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3'),
+            document.getElementById('step4')
+        ];
+        const detectionPositive = document.getElementById('detectionPositive');
+        const detectionNegative = document.getElementById('detectionNegative');
+        
+        // Simulação do progresso de processamento
+        let currentStep = 0;
+        let progress = 0;
+        
+        function updateProgress() {
+            // Atualiza a barra de progresso
+            progress += 1;
+            progressBar.style.width = progress + '%';
+            
+            // Atualiza os passos com base no progresso
+            if (progress <= 15 && currentStep < 1) {
+                updateStep(0);
+            } else if (progress <= 50 && currentStep < 2) {
+                updateStep(1);
+            } else if (progress <= 85 && currentStep < 3) {
+                updateStep(2);
+            } else if (progress <= 99 && currentStep < 4) {
+                updateStep(3);
+            }
+            
+            // Verifica se o processamento foi concluído
+            if (progress >= 100) {
+                processingCompleted();
+                return;
+            }
+            
+            // Continua a atualização
+            setTimeout(updateProgress, 100);
+        }
+        
+        function updateStep(stepIndex) {
+            // Marca o passo anterior como concluído
+            if (currentStep > 0) {
+                steps[currentStep - 1].classList.remove('active');
+                steps[currentStep - 1].classList.add('completed');
+                steps[currentStep - 1].querySelector('.step-icon').classList.remove('text-primary');
+                steps[currentStep - 1].querySelector('.step-icon').classList.add('text-success');
+                steps[currentStep - 1].querySelector('.step-icon').className = 
+                    steps[currentStep - 1].querySelector('.step-icon').className.replace('fa-spinner fa-spin', 'fa-check');
+            }
+            
+            // Atualiza o passo atual
+            currentStep = stepIndex + 1;
+            steps[stepIndex].classList.add('active');
+            steps[stepIndex].querySelector('.step-icon').className = 
+                steps[stepIndex].querySelector('.step-icon').className.replace(/fa-\w+/, 'fa-spinner fa-spin');
+            
+            // Atualiza o status de processamento
+            switch (stepIndex) {
+                case 0:
+                    processingStatus.textContent = 'Validando vídeo...';
+                    processingInfo.textContent = 'Verificando formato e integridade do arquivo.';
+                    break;
+                case 1:
+                    processingStatus.textContent = 'Extraindo frames...';
+                    processingInfo.textContent = 'Extraindo frames do vídeo para análise.';
+                    break;
+                case 2:
+                    processingStatus.textContent = 'Analisando frames...';
+                    processingInfo.textContent = 'Utilizando IA para detectar objetos cortantes.';
+                    break;
+                case 3:
+                    processingStatus.textContent = 'Finalizando análise...';
+                    processingInfo.textContent = 'Compilando resultados e gerando relatório.';
+                    break;
+            }
+        }
+        
+        function processingCompleted() {
+            // Marca o último passo como concluído
+            steps[currentStep - 1].classList.remove('active');
+            steps[currentStep - 1].classList.add('completed');
+            steps[currentStep - 1].querySelector('.step-icon').classList.remove('text-primary');
+            steps[currentStep - 1].querySelector('.step-icon').classList.add('text-success');
+            steps[currentStep - 1].querySelector('.step-icon').className = 
+                steps[currentStep - 1].querySelector('.step-icon').className.replace('fa-spinner fa-spin', 'fa-check');
+            
+            // Atualiza o status de processamento
+            processingStatus.textContent = 'Processamento concluído!';
+            processingInfo.textContent = 'O vídeo foi processado com sucesso.';
+            processingIcon.className = processingIcon.className.replace('fa-spinner fa-spin', 'fa-check-circle');
+            processingIcon.style.animation = 'none';
+            processingIcon.classList.remove('text-primary');
+            processingIcon.classList.add('text-success');
+            
+            // Simula uma chance de 30% de detectar um objeto cortante
+            const detected = Math.random() < 0.3;
+            
+            // Exibe o resultado apropriado após um pequeno atraso
+            setTimeout(function() {
+                if (detected) {
+                    detectionPositive.style.display = 'block';
+                    
+                    // Preenche os detalhes da detecção com valores simulados
+                    const objectTypes = ['Faca', 'Tesoura', 'Estilete', 'Objeto Cortante'];
+                    const objectType = document.getElementById('objectType');
+                    objectType.textContent = objectTypes[Math.floor(Math.random() * objectTypes.length)];
+                    
+                    const confidence = document.getElementById('confidence');
+                    const confidenceValue = Math.floor(Math.random() * 20) + 75; // 75-95%
+                    confidence.textContent = confidenceValue + '%';
+                    
+                    const frameNumber = document.getElementById('frameNumber');
+                    frameNumber.textContent = Math.floor(Math.random() * 100) + 1;
+                    
+                    const videoTime = document.getElementById('videoTime');
+                    const minutes = Math.floor(Math.random() * 3);
+                    const seconds = Math.floor(Math.random() * 60);
+                    videoTime.textContent = `00:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    detectionNegative.style.display = 'block';
+                    
+                    // Preenche os detalhes da análise com valores simulados
+                    const totalFrames = document.getElementById('totalFrames');
+                    totalFrames.textContent = Math.floor(Math.random() * 200) + 100;
+                    
+                    const videoDuration = document.getElementById('videoDuration');
+                    const minutes = Math.floor(Math.random() * 5) + 1;
+                    const seconds = Math.floor(Math.random() * 60);
+                    videoDuration.textContent = `00:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    const processingTime = document.getElementById('processingTime');
+                    processingTime.textContent = Math.floor(Math.random() * 60) + 30 + ' segundos';
+                }
+            }, 1000);
+        }
+        
+        // Inicia a simulação de processamento
+        setTimeout(updateProgress, 500);
+    });
+</script>
+{% endblock %}

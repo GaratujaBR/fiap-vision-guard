@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}FIAP VisionGuard - Detecção de Objetos Cortantes{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-body text-center p-5">
+                <h1 class="display-4 mb-4">FIAP VisionGuard</h1>
+                <p class="lead mb-4">
+                    Sistema de detecção de objetos cortantes em vídeos de câmeras de segurança utilizando inteligência artificial.
+                </p>
+                
+                <div class="row mt-5">
+                    <div class="col-md-4">
+                        <div class="card mb-4 h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-upload fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">Upload de Vídeo</h5>
+                                <p class="card-text">Faça upload de um vídeo pré-gravado para análise de objetos cortantes.</p>
+                                <a href="{{ url_for('routes.upload_file') }}" class="btn btn-primary mt-3">
+                                    <i class="fas fa-upload me-2"></i>Fazer Upload
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card mb-4 h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">Detecção Inteligente</h5>
+                                <p class="card-text">Nosso sistema utiliza inteligência artificial para identificar facas, tesouras e outros objetos cortantes.</p>
+                                <a href="#como-funciona" class="btn btn-outline-primary mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>Como Funciona
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card mb-4 h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-bell fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">Alertas Rápidos</h5>
+                                <p class="card-text">Receba alertas imediatos por e-mail, SMS ou ligação quando objetos perigosos forem detectados.</p>
+                                <a href="{{ url_for('routes.view_logs') }}" class="btn btn-outline-primary mt-3">
+                                    <i class="fas fa-list-alt me-2"></i>Ver Logs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mt-4" id="como-funciona">
+            <div class="card-body p-5">
+                <h2 class="mb-4">Como Funciona</h2>
+                
+                <div class="row align-items-center mb-5">
+                    <div class="col-md-6">
+                        <h4>1. Upload de Vídeo</h4>
+                        <p>
+                            Faça upload de um vídeo pré-gravado de uma câmera de segurança. 
+                            O sistema aceita formatos comuns como MP4, AVI, MOV e WMV.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <i class="fas fa-file-video fa-5x text-primary"></i>
+                    </div>
+                </div>
+                
+                <div class="row align-items-center mb-5">
+                    <div class="col-md-6 text-center order-md-1 order-2">
+                        <i class="fas fa-cogs fa-5x text-primary"></i>
+                    </div>
+                    <div class="col-md-6 order-md-2 order-1">
+                        <h4>2. Processamento e Análise</h4>
+                        <p>
+                            O sistema extrai frames do vídeo e utiliza um modelo de inteligência artificial 
+                            treinado para identificar objetos cortantes como facas, tesouras e estiletes.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h4>3. Alerta Imediato</h4>
+                        <p>
+                            Quando um objeto cortante é detectado, o sistema envia um alerta imediato 
+                            por e-mail, SMS ou ligação telefônica, incluindo detalhes sobre a detecção 
+                            e uma imagem do frame onde o objeto foi identificado.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <i class="fas fa-bell fa-5x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('routes.upload_file') }}" class="btn btn-lg btn-primary">
+                <i class="fas fa-upload me-2"></i>Começar Agora
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

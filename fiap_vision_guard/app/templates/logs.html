@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs de Detecção - FIAP VisionGuard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/logs.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="logs-container">
+    <div class="logs-header">
+        <h2 class="logs-title">Logs de Detecção</h2>
+        <p class="logs-subtitle">Visualize e analise todas as detecções de objetos cortantes identificadas pelo sistema</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters">
+        <div class="filters-title">
+            <span><i class="fas fa-filter me-2"></i>Filtros</span>
+            <button type="button" class="filters-toggle" id="toggle-filters">
+                <i class="fas fa-chevron-up me-1"></i>Recolher
+            </button>
+        </div>
+        
+        <form id="filter-form" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label for="date-from" class="filter-label">Data Inicial</label>
+                    <input type="date" id="date-from" class="form-control filter-control">
+                </div>
+                <div class="filter-group">
+                    <label for="date-to" class="filter-label">Data Final</label>
+                    <input type="date" id="date-to" class="form-control filter-control">
+                </div>
+                <div class="filter-group">
+                    <label for="confidence-threshold" class="filter-label">Confiança Mínima</label>
+                    <div class="input-group">
+                        <input type="range" class="form-range" id="confidence-threshold" min="0" max="100" step="5" value="50">
+                        <span class="input-group-text" id="confidence-value">50%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label for="object-type" class="filter-label">Tipo de Objeto</label>
+                    <select id="object-type" class="form-select filter-control">
+                        <option value="all">Todos os tipos</option>
+                        <option value="knife">Faca</option>
+                        <option value="scissors">Tesoura</option>
+                        <option value="cutter">Estilete</option>
+                        <option value="other">Outros</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="sort-by" class="filter-label">Ordenar por</label>
+                    <select id="sort-by" class="form-select filter-control">
+                        <option value="date-desc">Data (mais recente)</option>
+                        <option value="date-asc">Data (mais antiga)</option>
+                        <option value="confidence-desc">Confiança (maior)</option>
+                        <option value="confidence-asc">Confiança (menor)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-logs" class="form-control search-input" placeholder="Buscar nos logs...">
+            </div>
+            
+            <div class="filter-actions">
+                <div>
+                    <span class="text-muted">Exibindo <span id="log-count">24</span> logs</span>
+                </div>
+                <div>
+                    <button type="button" id="clear-filters" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-undo me-1"></i>Limpar Filtros
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-1"></i>Aplicar Filtros
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="logs-stats">
+        <h5 class="stats-title">Resumo de Detecções</h5>
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value">24</div>
+                <div class="stat-label">Total de Detecções</div>
+            </div>
+            <div class="stat-card" style="background-color: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.2);">
+                <div class="stat-value" style="color: #dc3545;">8</div>
+                <div class="stat-label">Alertas Críticos</div>
+            </div>
+            <div class="stat-card" style="background-color: rgba(255, 193, 7, 0.1); border-color: rgba(255, 193, 7, 0.2);">
+                <div class="stat-value" style="color: #ffc107;">12</div>
+                <div class="stat-label">Alertas Médios</div>
+            </div>
+            <div class="stat-card" style="background-color: rgba(40, 167, 69, 0.1); border-color: rgba(40, 167, 69, 0.2);">
+                <div class="stat-value" style="color: #28a745;">56</div>
+                <div class="stat-label">Vídeos Seguros</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de Logs -->
+    <div class="log-container">
+        <!-- Log 1 -->
+        <div class="log-card" data-log-id="1" data-date="2023-06-15T14:32:00" data-confidence="95" data-object-type="knife">
+            <div class="log-header">
+                <span class="log-id">#1</span>
+                <span class="log-date">15/06/2023, 14:32</span>
+            </div>
+            <div class="log-image-container">
+                <img src="{{ url_for('static', filename='img/sample/detection1.jpg') }}" class="log-image" alt="Detecção de Faca">
+                <span class="log-badge bg-danger">Crítico</span>
+            </div>
+            <div class="log-body">
+                <h5 class="log-title">Detecção de Faca</h5>
+                <div class="log-info">
+                    <div class="log-info-item">
+                        <span class="log-info-label">Confiança:</span>
+                        <span class="log-info-value">95%</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Tipo:</span>
+                        <span class="log-info-value">Faca</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Câmera:</span>
+                        <span class="log-info-value">Entrada Principal</span>
+                    </div>
+                </div>
+            </div>
+            <div class="log-footer">
+                <span class="text-muted">ID: VG-2023-06-15-001</span>
+                <div class="log-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary view-details-btn" data-log-id="1" data-bs-toggle="tooltip" title="Ver Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Exportar">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log 2 -->
+        <div class="log-card" data-log-id="2" data-date="2023-06-15T11:15:00" data-confidence="78" data-object-type="scissors">
+            <div class="log-header">
+                <span class="log-id">#2</span>
+                <span class="log-date">15/06/2023, 11:15</span>
+            </div>
+            <div class="log-image-container">
+                <img src="{{ url_for('static', filename='img/sample/detection2.jpg') }}" class="log-image" alt="Detecção de Tesoura">
+                <span class="log-badge bg-warning text-dark">Médio</span>
+            </div>
+            <div class="log-body">
+                <h5 class="log-title">Detecção de Tesoura</h5>
+                <div class="log-info">
+                    <div class="log-info-item">
+                        <span class="log-info-label">Confiança:</span>
+                        <span class="log-info-value">78%</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Tipo:</span>
+                        <span class="log-info-value">Tesoura</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Câmera:</span>
+                        <span class="log-info-value">Recepção</span>
+                    </div>
+                </div>
+            </div>
+            <div class="log-footer">
+                <span class="text-muted">ID: VG-2023-06-15-002</span>
+                <div class="log-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary view-details-btn" data-log-id="2" data-bs-toggle="tooltip" title="Ver Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Exportar">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log 3 -->
+        <div class="log-card" data-log-id="3" data-date="2023-06-14T16:45:00" data-confidence="65" data-object-type="cutter">
+            <div class="log-header">
+                <span class="log-id">#3</span>
+                <span class="log-date">14/06/2023, 16:45</span>
+            </div>
+            <div class="log-image-container">
+                <img src="{{ url_for('static', filename='img/sample/detection3.jpg') }}" class="log-image" alt="Detecção de Estilete">
+                <span class="log-badge bg-warning text-dark">Médio</span>
+            </div>
+            <div class="log-body">
+                <h5 class="log-title">Detecção de Estilete</h5>
+                <div class="log-info">
+                    <div class="log-info-item">
+                        <span class="log-info-label">Confiança:</span>
+                        <span class="log-info-value">65%</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Tipo:</span>
+                        <span class="log-info-value">Estilete</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Câmera:</span>
+                        <span class="log-info-value">Corredor 2</span>
+                    </div>
+                </div>
+            </div>
+            <div class="log-footer">
+                <span class="text-muted">ID: VG-2023-06-14-001</span>
+                <div class="log-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary view-details-btn" data-log-id="3" data-bs-toggle="tooltip" title="Ver Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Exportar">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log 4 -->
+        <div class="log-card" data-log-id="4" data-date="2023-06-14T10:20:00" data-confidence="92" data-object-type="knife">
+            <div class="log-header">
+                <span class="log-id">#4</span>
+                <span class="log-date">14/06/2023, 10:20</span>
+            </div>
+            <div class="log-image-container">
+                <img src="{{ url_for('static', filename='img/sample/detection4.jpg') }}" class="log-image" alt="Detecção de Faca">
+                <span class="log-badge bg-danger">Crítico</span>
+            </div>
+            <div class="log-body">
+                <h5 class="log-title">Detecção de Faca</h5>
+                <div class="log-info">
+                    <div class="log-info-item">
+                        <span class="log-info-label">Confiança:</span>
+                        <span class="log-info-value">92%</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Tipo:</span>
+                        <span class="log-info-value">Faca</span>
+                    </div>
+                    <div class="log-info-item">
+                        <span class="log-info-label">Câmera:</span>
+                        <span class="log-info-value">Estacionamento</span>
+                    </div>
+                </div>
+            </div>
+            <div class="log-footer">
+                <span class="text-muted">ID: VG-2023-06-14-002</span>
+                <div class="log-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary view-details-btn" data-log-id="4" data-bs-toggle="tooltip" title="Ver Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Exportar">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paginação -->
+    <nav aria-label="Navegação de páginas">
+        <div class="pagination-container">
+            <ul class="pagination">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Anterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Próximo">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<!-- Modal para Exportar -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Exportar Logs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="exportFormat" class="form-label">Formato</label>
+                        <select class="form-select" id="exportFormat">
+                            <option value="csv">CSV</option>
+                            <option value="pdf">PDF</option>
+                            <option value="json">JSON</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exportDateRange" class="form-label">Período</label>
+                        <select class="form-select" id="exportDateRange">
+                            <option value="all">Todos os logs</option>
+                            <option value="filtered">Apenas logs filtrados</option>
+                            <option value="custom">Período personalizado</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="customDateRange">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="exportDateFrom" class="form-label">De</label>
+                                <input type="date" class="form-control" id="exportDateFrom">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="exportDateTo" class="form-label">Até</label>
+                                <input type="date" class="form-control" id="exportDateTo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exportIncludeImages" class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="exportIncludeImages">
+                            Incluir imagens
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-download me-1"></i> Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Manipulação do slider de confiança
+        const confidenceThreshold = document.getElementById('confidence-threshold');
+        const confidenceValue = document.getElementById('confidence-value');
+        
+        if (confidenceThreshold && confidenceValue) {
+            confidenceThreshold.addEventListener('input', function() {
+                confidenceValue.textContent = this.value + '%';
+            });
+        }
+        
+        // Toggle de filtros
+        const toggleFilters = document.getElementById('toggle-filters');
+        const filterForm = document.getElementById('filter-form');
+        
+        if (toggleFilters && filterForm) {
+            toggleFilters.addEventListener('click', function() {
+                const isCollapsed = filterForm.classList.contains('d-none');
+                
+                if (isCollapsed) {
+                    filterForm.classList.remove('d-none');
+                    this.innerHTML = '<i class="fas fa-chevron-up me-1"></i>Recolher';
+                } else {
+                    filterForm.classList.add('d-none');
+                    this.innerHTML = '<i class="fas fa-chevron-down me-1"></i>Expandir';
+                }
+            });
+        }
+        
+        // Mostrar período personalizado no modal de exportação
+        const exportDateRange = document.getElementById('exportDateRange');
+        const customDateRange = document.getElementById('customDateRange');
+        
+        if (exportDateRange && customDateRange) {
+            exportDateRange.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customDateRange.classList.remove('d-none');
+                } else {
+                    customDateRange.classList.add('d-none');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

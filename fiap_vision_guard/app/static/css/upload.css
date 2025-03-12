@@ -1,0 +1,156 @@
+/* FIAP VisionGuard - Estilos para a página de Upload */
+
+.upload-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 0.5rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background-color: var(--card);
+    cursor: pointer;
+}
+
+.upload-area:hover, .upload-area.dragover {
+    border-color: var(--secondary);
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.upload-icon {
+    font-size: 4rem;
+    color: var(--secondary);
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.upload-area:hover .upload-icon, .upload-area.dragover .upload-icon {
+    transform: scale(1.1);
+}
+
+.upload-text {
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.upload-info {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-name {
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+.file-preview {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.upload-progress-container {
+    margin-top: 1.5rem;
+}
+
+.progress {
+    height: 0.5rem;
+    border-radius: 9999px;
+    overflow: hidden;
+    background-color: var(--input);
+}
+
+.progress-bar {
+    background-color: var(--secondary);
+    transition: width 0.3s ease;
+}
+
+.upload-restrictions {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: rgba(59, 130, 246, 0.05);
+    border: 1px solid var(--border);
+}
+
+.upload-restrictions h5 {
+    color: var(--secondary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.upload-restrictions ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+.upload-restrictions li {
+    margin-bottom: 0.5rem;
+    color: var(--muted-foreground);
+}
+
+.upload-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.upload-button {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.upload-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Animação de pulso para o ícone de upload */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.upload-area.dragover .upload-icon {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .upload-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .upload-button {
+        width: 100%;
+    }
+}
