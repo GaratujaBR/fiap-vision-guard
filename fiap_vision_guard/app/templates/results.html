@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultados da Análise - FIAP VisionGuard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Resultados da Análise</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Informações do Vídeo</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Nome do arquivo:</strong> {{ filename }}</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header {% if detection_results.detected %}bg-danger{% else %}bg-success{% endif %} text-white">
+                    <h5 class="card-title mb-0">Resultado da Detecção</h5>
+                </div>
+                <div class="card-body">
+                    {% if detection_results.detected %}
+                        <div class="alert alert-danger">
+                            <h4 class="alert-heading">Objeto Cortante Detectado!</h4>
+                            <p><strong>Tipo de objeto:</strong> {{ detection_results.object_type }}</p>
+                            <p><strong>Confiança:</strong> {{ "%.2f"|format(detection_results.confidence*100) }}%</p>
+                            <p><strong>Frame:</strong> {{ detection_results.frame_number }}</p>
+                        </div>
+                        
+                        {% if detection_results.display_path %}
+                        <div class="mt-4">
+                            <h5>Imagem da Detecção:</h5>
+                            <div class="text-center">
+                                <img src="{{ url_for('static', filename=detection_results.display_path) }}" 
+                                     alt="Frame com detecção" 
+                                     class="img-fluid border rounded shadow" 
+                                     style="max-height: 500px;">
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-success">
+                            <h4 class="alert-heading">Nenhum Objeto Cortante Detectado</h4>
+                            <p>A análise do vídeo não identificou nenhum objeto cortante nos frames.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if alert_info %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">Informações do Alerta</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status do alerta:</strong> {{ alert_info.status }}</p>
+                    <p><strong>Enviado para:</strong> {{ alert_info.recipient }}</p>
+                    <p><strong>Horário:</strong> {{ alert_info.timestamp }}</p>
+                    {% if alert_info.message %}
+                    <p><strong>Mensagem:</strong> {{ alert_info.message }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('routes.index') }}" class="btn btn-primary">Voltar para Página Inicial</a>
+                <a href="{{ url_for('routes.upload_file') }}" class="btn btn-success">Analisar Outro Vídeo</a>
+                {% if detection_results.detected %}
+                <a href="{{ url_for('routes.view_logs') }}" class="btn btn-secondary">Ver Histórico de Alertas</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -44,6 +44,14 @@ def create_app(test_config=None):
     # Garante que a pasta de uploads existe
     os.makedirs(os.path.join(app.instance_path, app.config['UPLOAD_FOLDER']), exist_ok=True)
     
+    # Garante que a pasta de frames existe para armazenar os frames processados
+    os.makedirs(os.path.join(app.static_folder, 'frames'), exist_ok=True)
+    
+    # Configura o modelo de detecção
+    with app.app_context():
+        from .utils.model_setup import setup_model
+        setup_model()
+    
     # Registra as rotas
     from . import routes
     app.register_blueprint(routes.bp)
